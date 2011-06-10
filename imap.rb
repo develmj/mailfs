@@ -22,7 +22,7 @@ end
       
 CONFIG = {
   :host     => 'imap.gmail.com',
-  :username => 'develmj@gmail.com',
+  :username => '',
   :password => '',
   :port     => 993,
   :ssl      => true
