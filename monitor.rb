@@ -4,7 +4,7 @@ require 'rubygems'
 require 'rb-inotify'
 require 'pp'
 
-WDIR = "/tmp"
+WDIR = "/home/mj/torture/temp"
 START_TIME = Time.now
 
 
@@ -31,15 +31,14 @@ monitor_thread = Thread.new {
       unless x.flags.include?(:isdir)
         if File.exist?("#{WDIR}/#{x.name}")
           old_mtime = 0
-          if H[x.name]
-            old_mtime = H[x.name][:mtime]
-          end
-          H[x.name] = {:flags => x.flags, :mtime => File.mtime("#{WDIR}/#{x.name}").to_i, :old_mtime => old_mtime }
+          mtime = File.mtime("#{WDIR}/#{x.name}").to_i
+          old_mtime = H[x.name][:mtime] if H[x.name] and H[x.name][:mtime] < mtime
+          H[x.name] = {:flags => x.flags, :mtime => mtime, :old_mtime => old_mtime }
         else
           H.delete(x.name)
         end
       end
-    rescue 
+    rescue
     end
   }
 
@@ -54,7 +53,6 @@ monitor_thread = Thread.new {
 printer_thread = Thread.new {
   while true
     sleep (3)
-    process_hash(H)
     commit_write(H)
   end
 }
