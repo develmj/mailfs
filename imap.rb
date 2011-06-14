@@ -2,7 +2,7 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
-require 'net/imap'
+require 'imap_lib'
 require 'pp'
 
 def parse_text(text)
@@ -19,18 +19,18 @@ def parse_text(text)
   }
   return temp_text.join("")
 end
-      
+
 CONFIG = {
-  :host     => 'imap.gmail.com',
-  :username => '',
-  :password => '',
+  :host     => "imap.gmail.com",
+  :username => "",
+  :password => "",
   :port     => 993,
   :ssl      => true
 }
 
 imap = Net::IMAP.new( CONFIG[:host], CONFIG[:port], CONFIG[:ssl] )
 imap.login( CONFIG[:username], CONFIG[:password] )
-imap.select("wallet")
+imap.select("inbox")
 
 mails = imap.search(['SUBJECT', "[gmailfs]"])
 
@@ -44,16 +44,17 @@ mails.each{|msg_id|
   body = mail.attr["BODY"]
   i = 1
   while body.parts[i] != nil
-   cType = body.parts[i].media_type
+    cType = body.parts[i].media_type
     cName = body.parts[i].param['NAME']
     i+=1
     # fetch attachment.
     if cType and cName
-        attachment = imap.fetch(msg_id, "BODY[#{i}]")[0].attr["BODY[#{i}]"]
-        # Save message, BASE64 decoded
-        File.new(cName,'wb+').write(attachment.unpack('m'))
+      attachment = imap.fetch(msg_id, "BODY[#{i}]")[0].attr["BODY[#{i}]"]
+      # Save message, BASE64 decoded
+      File.new(cName,'wb+').write(attachment.unpack('m'))
     end
   end 
 }
 
 imap.logout
+
